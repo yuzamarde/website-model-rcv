@@ -1,0 +1,33 @@
+{
+  "name": "website-model-rcv",
+  "version": "1.0.0",
+  "description": "Source-of-truth response contracts for the Porto public portfolio website API",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./schemas/basicInfo": "./schemas/basicInfo.js",
+    "./schemas/education": "./schemas/education.js",
+    "./schemas/certification": "./schemas/certification.js",
+    "./schemas/experience": "./schemas/experience.js",
+    "./schemas/socialAccount": "./schemas/socialAccount.js",
+    "./schemas/language": "./schemas/language.js",
+    "./schemas/portfolio": "./schemas/portfolio.js",
+    "./schemas/skillStack": "./schemas/skillStack.js",
+    "./schemas/meta": "./schemas/meta.js",
+    "./schemas/sitemap": "./schemas/sitemap.js"
+  },
+  "keywords": [
+    "porto",
+    "portfolio",
+    "contracts",
+    "api",
+    "response-shapes"
+  ],
+  "author": "yuzamarde",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuzamarde/website-model-rcv.git"
+  }
+}
