@@ -1,33 +1,90 @@
 {
-  "name": "website-model-rcv",
-  "version": "1.0.0",
-  "description": "Source-of-truth response contracts for the Porto public portfolio website API",
-  "type": "module",
-  "main": "index.js",
-  "exports": {
-    ".": "./index.js",
-    "./schemas/basicInfo": "./schemas/basicInfo.js",
-    "./schemas/education": "./schemas/education.js",
-    "./schemas/certification": "./schemas/certification.js",
-    "./schemas/experience": "./schemas/experience.js",
-    "./schemas/socialAccount": "./schemas/socialAccount.js",
-    "./schemas/language": "./schemas/language.js",
-    "./schemas/portfolio": "./schemas/portfolio.js",
-    "./schemas/skillStack": "./schemas/skillStack.js",
-    "./schemas/meta": "./schemas/meta.js",
-    "./schemas/sitemap": "./schemas/sitemap.js"
-  },
-  "keywords": [
-    "porto",
-    "portfolio",
-    "contracts",
-    "api",
-    "response-shapes"
-  ],
-  "author": "yuzamarde",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/yuzamarde/website-model-rcv.git"
-  }
+    "name": "website-model-rcv",
+    "version": "2.1.0",
+    "description": "Source-of-truth response contracts (TypeScript + Zod) for the Porto public portfolio website API",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        },
+        "./envelope": {
+            "types": "./dist/envelope.d.ts",
+            "import": "./dist/envelope.js"
+        },
+        "./schemas/basicInfo": {
+            "types": "./dist/schemas/basicInfo.d.ts",
+            "import": "./dist/schemas/basicInfo.js"
+        },
+        "./schemas/education": {
+            "types": "./dist/schemas/education.d.ts",
+            "import": "./dist/schemas/education.js"
+        },
+        "./schemas/certification": {
+            "types": "./dist/schemas/certification.d.ts",
+            "import": "./dist/schemas/certification.js"
+        },
+        "./schemas/experience": {
+            "types": "./dist/schemas/experience.d.ts",
+            "import": "./dist/schemas/experience.js"
+        },
+        "./schemas/socialAccount": {
+            "types": "./dist/schemas/socialAccount.d.ts",
+            "import": "./dist/schemas/socialAccount.js"
+        },
+        "./schemas/language": {
+            "types": "./dist/schemas/language.d.ts",
+            "import": "./dist/schemas/language.js"
+        },
+        "./schemas/portfolio": {
+            "types": "./dist/schemas/portfolio.d.ts",
+            "import": "./dist/schemas/portfolio.js"
+        },
+        "./schemas/skillStack": {
+            "types": "./dist/schemas/skillStack.d.ts",
+            "import": "./dist/schemas/skillStack.js"
+        },
+        "./schemas/meta": {
+            "types": "./dist/schemas/meta.d.ts",
+            "import": "./dist/schemas/meta.js"
+        },
+        "./schemas/sitemap": {
+            "types": "./dist/schemas/sitemap.d.ts",
+            "import": "./dist/schemas/sitemap.js"
+        }
+    },
+    "files": [
+        "dist",
+        "README.md"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "clean": "rimraf dist",
+        "smoke": "node --experimental-strip-types src/__smoke__/examples.ts",
+        "prepublishOnly": "npm run clean && npm run build"
+    },
+    "keywords": [
+        "porto",
+        "portfolio",
+        "contracts",
+        "api",
+        "response-shapes",
+        "zod",
+        "typescript"
+    ],
+    "author": "yuzamarde",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/yuzamarde/website-model-rcv.git"
+    },
+    "dependencies": {
+        "zod": "^3.23.0"
+    },
+    "devDependencies": {
+        "typescript": "^5.4.0",
+        "rimraf": "^5.0.0"
+    }
 }

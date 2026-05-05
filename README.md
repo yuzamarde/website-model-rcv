@@ -66,39 +66,58 @@ Every endpoint wraps its data in a standard envelope:
 
 ## Response Shapes
 
-See individual files in the [`schemas/`](./schemas/) folder:
+Each endpoint has a Zod schema + an inferred TypeScript type. Source lives in
+[`src/schemas/`](./src/schemas/); the published artifact is compiled to `dist/`.
 
-| File | Endpoint(s) |
-|------|-------------|
-| [`schemas/basicInfo.js`](./schemas/basicInfo.js) | `/basic`, `/:username` |
-| [`schemas/education.js`](./schemas/education.js) | `/education` |
-| [`schemas/certification.js`](./schemas/certification.js) | `/certification` |
-| [`schemas/experience.js`](./schemas/experience.js) | `/experience` |
-| [`schemas/socialAccount.js`](./schemas/socialAccount.js) | `/social` |
-| [`schemas/language.js`](./schemas/language.js) | `/languages` |
-| [`schemas/portfolio.js`](./schemas/portfolio.js) | `/portfolio`, `/portfolio/:id` |
-| [`schemas/skillStack.js`](./schemas/skillStack.js) | `/skills` |
-| [`schemas/meta.js`](./schemas/meta.js) | `/meta` |
-| [`schemas/sitemap.js`](./schemas/sitemap.js) | `/sitemap` |
+| Source file | Endpoint(s) | Exports |
+|-------------|-------------|---------|
+| [`src/schemas/basicInfo.ts`](./src/schemas/basicInfo.ts)         | `/basic`, `/:username`              | `BasicInfoSchema`, `BasicInfo`, `USER_STATUS`, `USER_ROLES` |
+| [`src/schemas/education.ts`](./src/schemas/education.ts)         | `/education`                        | `EducationSchema`, `Education`, `EDUCATION_DEGREES` |
+| [`src/schemas/certification.ts`](./src/schemas/certification.ts) | `/certification`                    | `CertificationSchema`, `Certification` |
+| [`src/schemas/experience.ts`](./src/schemas/experience.ts)       | `/experience`                       | `ExperienceSchema`, `Experience`, `Position`, contract / type-work enums |
+| [`src/schemas/socialAccount.ts`](./src/schemas/socialAccount.ts) | `/social`                           | `SocialAccountSchema`, `SocialPlatform` |
+| [`src/schemas/language.ts`](./src/schemas/language.ts)           | `/languages`                        | `LanguageSchema`, `LANGUAGE_CODES`, `LANGUAGE_MAP` |
+| [`src/schemas/portfolio.ts`](./src/schemas/portfolio.ts)         | `/portfolio`, `/portfolio/:id`      | `PortfolioSchema`, `PortfolioListEnvelopeSchema`, status / visibility enums |
+| [`src/schemas/skillStack.ts`](./src/schemas/skillStack.ts)       | `/skills`                           | `SkillStackSchema`, `SKILL_PROFICIENCY_VALUES` |
+| [`src/schemas/meta.ts`](./src/schemas/meta.ts)                   | `/meta`                             | `MetaSchema`, `Meta` |
+| [`src/schemas/sitemap.ts`](./src/schemas/sitemap.ts)             | `/sitemap`                          | `SitemapSchema`, `SITEMAP_SECTIONS` |
 
 ---
 
 ## Quick Import
 
-```js
-import {
-    BASIC_INFO_SHAPE,
-    EDUCATION_SHAPE,
-    CERTIFICATION_SHAPE,
-    EXPERIENCE_SHAPE,
-    SOCIAL_ACCOUNT_SHAPE,
-    LANGUAGE_SHAPE,
-    PORTFOLIO_SHAPE,
-    SKILL_STACK_SHAPE,
-    META_SHAPE,
-    SITEMAP_SHAPE,
-} from 'website-model-rcv';
+TypeScript:
+
+```ts
+import { BasicInfoSchema, type BasicInfo, apiEnvelope } from 'website-model-rcv';
+
+const Envelope = apiEnvelope(BasicInfoSchema);
+const res = await fetch(`/api/public/user/id/${userId}/basic`).then(r => r.json());
+const { data: info } = Envelope.parse(res); // info: BasicInfo
 ```
+
+JavaScript:
+
+```js
+import { BasicInfoSchema } from 'website-model-rcv';
+
+const res = await fetch(`/api/public/user/id/${userId}/basic`).then(r => r.json());
+const info = BasicInfoSchema.parse(res.data);
+```
+
+---
+
+## Building (contributors)
+
+```bash
+npm install
+npm run build      # tsc → dist/
+npm run smoke      # validate every *_EXAMPLE against its Schema
+```
+
+> v2 breaking change: the legacy `*_SHAPE` string-typed objects (v1) have been
+> replaced with Zod schemas (`*Schema`) and inferred types. The `*_EXAMPLE`
+> constants and enum arrays are preserved with the same names.
 
 ---
 
