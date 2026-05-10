@@ -84,18 +84,24 @@ export {
     PortfolioSchema,
     PortfolioItemSchema,
     PortfolioCategorySchema,
-    PortfolioGalleryItemSchema,
+    PortfolioImageBlockSchema,
+    PortfolioDescriptionBlockSchema,
+    PortfolioContentBlockSchema,
     PortfolioListEnvelopeSchema,
     PORTFOLIO_STATUS_VALUES,
     PORTFOLIO_VISIBILITY_VALUES,
+    PORTFOLIO_BLOCK_TYPES,
     PORTFOLIO_EXAMPLE,
     type Portfolio,
     type PortfolioItem,
     type PortfolioCategory,
-    type PortfolioGalleryItem,
+    type PortfolioImageBlock,
+    type PortfolioDescriptionBlock,
+    type PortfolioContentBlock,
     type PortfolioListEnvelope,
     type PortfolioStatus,
     type PortfolioVisibility,
+    type PortfolioBlockType,
 } from './schemas/portfolio.js';
 
 export {
@@ -123,3 +129,19 @@ export {
     type Sitemap,
     type SitemapSection,
 } from './schemas/sitemap.js';
+
+export {
+    TrackQuerySchema,
+    TrackResponseSchema,
+    VisitorRecordSchema,
+    VisitorPortfolioRecordSchema,
+    VISITOR_DEVICE_VALUES,
+    TRACK_RESPONSE_EXAMPLE,
+    VISITOR_RECORD_EXAMPLE,
+    VISITOR_PORTFOLIO_RECORD_EXAMPLE,
+    type TrackQuery,
+    type TrackResponse,
+    type VisitorRecord,
+    type VisitorPortfolioRecord,
+    type VisitorDevice,
+} from './schemas/visitor.js';

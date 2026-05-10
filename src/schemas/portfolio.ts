@@ -11,10 +11,13 @@
  * The list envelope adds an extra `usedCategories: string[]` field
  * (see `PortfolioListEnvelopeSchema`).
  *
- * v2.1 — replaced legacy `images[]` / `imageCaptions[]` / `contentOrder[]`
- *        with `longDescription` (sanitized HTML) + `gallery[]` (max 5).
- *        Inline images inside longDescription use `<img data-media-id="..." src="...">`
- *        — clients should render the HTML as-is.
+ * v2.2 — replaced `longDescription` (sanitized HTML) + `gallery[]` with a
+ *        single typed `content[]` array. Each block is either an image or a
+ *        sanitized description-HTML chunk; array index = display order, with
+ *        no constraints on sequencing (adjacent same-type blocks allowed).
+ * v2.3 — adds `imageId` / `pdfId` / `videoId` / `content[].mediaId` on read
+ *        responses (additive, non-breaking) so edit forms can round-trip
+ *        unchanged Media refs without re-uploading.
  */
 import { z } from 'zod';
 
@@ -24,16 +27,33 @@ export type PortfolioStatus = (typeof PORTFOLIO_STATUS_VALUES)[number];
 export const PORTFOLIO_VISIBILITY_VALUES = ['Draft', 'Published'] as const;
 export type PortfolioVisibility = (typeof PORTFOLIO_VISIBILITY_VALUES)[number];
 
+export const PORTFOLIO_BLOCK_TYPES = ['image', 'description'] as const;
+export type PortfolioBlockType = (typeof PORTFOLIO_BLOCK_TYPES)[number];
+
 export const PortfolioCategorySchema = z.object({
     _id: z.string(),
     name: z.string(),
 });
 
-export const PortfolioGalleryItemSchema = z.object({
+// ============================================
+// Content block schemas (discriminated on `type`)
+// ============================================
+export const PortfolioImageBlockSchema = z.object({
+    type:    z.literal('image'),
     url:     z.string(),
-    caption: z.string().nullable(),
+    mediaId: z.string().nullable(),
     alt:     z.string().nullable(),
 });
+
+export const PortfolioDescriptionBlockSchema = z.object({
+    type: z.literal('description'),
+    html: z.string(),
+});
+
+export const PortfolioContentBlockSchema = z.discriminatedUnion('type', [
+    PortfolioImageBlockSchema,
+    PortfolioDescriptionBlockSchema,
+]);
 
 export const PortfolioItemSchema = z.object({
     _id: z.string(),
@@ -41,9 +61,10 @@ export const PortfolioItemSchema = z.object({
     client: z.string(),
     url: z.string(),
     description: z.string(),
-    longDescription: z.string(),
     image: z.string().nullable(),
+    imageId: z.string().nullable(),
     pdf: z.string().nullable(),
+    pdfId: z.string().nullable(),
     category: PortfolioCategorySchema.nullable(),
     skillsStack: z.array(z.string()),
     order: z.number(),
@@ -54,8 +75,9 @@ export const PortfolioItemSchema = z.object({
     sourceUrl: z.string().nullable(),
     visibility: z.enum(PORTFOLIO_VISIBILITY_VALUES),
     verified: z.boolean(),
-    gallery: z.array(PortfolioGalleryItemSchema),
+    content: z.array(PortfolioContentBlockSchema),
     video: z.string().nullable(),
+    videoId: z.string().nullable(),
     videoThumbnail: z.string().nullable(),
     createdAt: z.string(),
     updatedAt: z.string(),
@@ -74,7 +96,9 @@ export const PortfolioListEnvelopeSchema = z.object({
 });
 
 export type PortfolioCategory = z.infer<typeof PortfolioCategorySchema>;
-export type PortfolioGalleryItem = z.infer<typeof PortfolioGalleryItemSchema>;
+export type PortfolioImageBlock = z.infer<typeof PortfolioImageBlockSchema>;
+export type PortfolioDescriptionBlock = z.infer<typeof PortfolioDescriptionBlockSchema>;
+export type PortfolioContentBlock = z.infer<typeof PortfolioContentBlockSchema>;
 export type PortfolioItem = z.infer<typeof PortfolioItemSchema>;
 export type Portfolio = z.infer<typeof PortfolioSchema>;
 export type PortfolioListEnvelope = z.infer<typeof PortfolioListEnvelopeSchema>;
@@ -86,17 +110,10 @@ export const PORTFOLIO_EXAMPLE: Portfolio = [
         client: 'Tokopedia',
         url: 'https://dashboard.tokopedia.com',
         description: 'Real-time analytics dashboard for seller performance.',
-        longDescription:
-            '<p>A real-time dashboard built for sellers on Tokopedia.</p>' +
-            '<figure>' +
-            '<img data-media-id="64f1a2b3c4d5e6f7a8b9c0e1" ' +
-            'src="https://cdn.example.com/portfolio/ecommerce-2.jpg" ' +
-            'alt="Dashboard hero" loading="lazy" />' +
-            '<figcaption>Live sales metrics</figcaption>' +
-            '</figure>' +
-            '<ul><li>React + Node.js stack</li><li>WebSocket live updates</li></ul>',
         image: 'https://cdn.example.com/portfolio/ecommerce.jpg',
+        imageId: '64f1a2b3c4d5e6f7a8b9c0d1',
         pdf: null,
+        pdfId: null,
         category: { _id: '64f1a2b3c4d5e6f7a8b9c0e3', name: 'Web App' },
         skillsStack: ['React', 'Node.js', 'MongoDB'],
         order: 1,
@@ -107,19 +124,15 @@ export const PORTFOLIO_EXAMPLE: Portfolio = [
         sourceUrl: 'https://github.com/johndoe/ecommerce-dashboard',
         visibility: 'Published',
         verified: false,
-        gallery: [
-            {
-                url: 'https://cdn.example.com/portfolio/ecommerce-2.jpg',
-                caption: 'Dashboard overview with live sales metrics',
-                alt: 'Dashboard overview',
-            },
-            {
-                url: 'https://cdn.example.com/portfolio/ecommerce-3.jpg',
-                caption: 'Category breakdown chart by product type',
-                alt: 'Category chart',
-            },
+        content: [
+            { type: 'description', html: '<p>A real-time dashboard built for sellers on Tokopedia.</p>' },
+            { type: 'description', html: '<ul><li>React + Node.js stack</li><li>WebSocket live updates</li></ul>' },
+            { type: 'image', url: 'https://cdn.example.com/portfolio/ecommerce-2.jpg', mediaId: '64f1a2b3c4d5e6f7a8b9c0d4', alt: 'Dashboard overview' },
+            { type: 'image', url: 'https://cdn.example.com/portfolio/ecommerce-3.jpg', mediaId: '64f1a2b3c4d5e6f7a8b9c0d5', alt: 'Category chart' },
+            { type: 'description', html: '<h3>Outcome</h3><p>2× faster reporting cycle.</p>' },
         ],
         video: null,
+        videoId: null,
         videoThumbnail: null,
         createdAt: '2024-01-10T09:00:00.000Z',
         updatedAt: '2024-01-10T09:00:00.000Z',

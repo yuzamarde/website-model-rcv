@@ -18,6 +18,9 @@ import {
     SkillStackSchema, SKILL_STACK_EXAMPLE,
     MetaSchema, META_EXAMPLE,
     SitemapSchema, SITEMAP_EXAMPLE,
+    TrackResponseSchema, TRACK_RESPONSE_EXAMPLE,
+    VisitorRecordSchema, VISITOR_RECORD_EXAMPLE,
+    VisitorPortfolioRecordSchema, VISITOR_PORTFOLIO_RECORD_EXAMPLE,
 } from '../index.js';
 import type { ZodTypeAny } from 'zod';
 
@@ -32,6 +35,9 @@ const cases: Array<[string, ZodTypeAny, unknown]> = [
     ['skillStack', SkillStackSchema, SKILL_STACK_EXAMPLE],
     ['meta', MetaSchema, META_EXAMPLE],
     ['sitemap', SitemapSchema, SITEMAP_EXAMPLE],
+    ['visitor/trackResponse', TrackResponseSchema, TRACK_RESPONSE_EXAMPLE],
+    ['visitor/record', VisitorRecordSchema, VISITOR_RECORD_EXAMPLE],
+    ['visitor/portfolioRecord', VisitorPortfolioRecordSchema, VISITOR_PORTFOLIO_RECORD_EXAMPLE],
 ];
 
 let failed = 0;
