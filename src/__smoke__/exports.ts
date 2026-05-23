@@ -26,7 +26,7 @@ const subpaths = [
     { subpath: './schemas/skillStack', mustHave: ['SkillStackSchema', 'SkillStackItemSchema', 'SkillCategorySchema', 'SKILL_PROFICIENCY_VALUES', 'SKILL_STACK_EXAMPLE'] },
     { subpath: './schemas/meta', mustHave: ['MetaSchema', 'META_EXAMPLE'] },
     { subpath: './schemas/sitemap', mustHave: ['SitemapSchema', 'SITEMAP_SECTIONS', 'SITEMAP_EXAMPLE'] },
-    { subpath: './schemas/visitor', mustHave: ['TrackQuerySchema', 'TrackResponseSchema', 'VisitorRecordSchema', 'VisitorPortfolioRecordSchema', 'VISITOR_DEVICE_VALUES', 'TRACK_RESPONSE_EXAMPLE', 'VISITOR_RECORD_EXAMPLE', 'VISITOR_PORTFOLIO_RECORD_EXAMPLE'] },
+    { subpath: './schemas/visitor', mustHave: ['TrackQuerySchema', 'TrackResponseSchema', 'VisitorRecordSchema', 'VisitorPortfolioRecordSchema', 'VisitorWriteSchema', 'VisitorPortfolioWriteSchema', 'VISITOR_DEVICE_VALUES', 'TRACK_RESPONSE_EXAMPLE', 'VISITOR_RECORD_EXAMPLE', 'VISITOR_PORTFOLIO_RECORD_EXAMPLE', 'VISITOR_WRITE_EXAMPLE', 'VISITOR_PORTFOLIO_WRITE_EXAMPLE'] },
 ];
 
 const rootMustHave = [
@@ -41,7 +41,7 @@ const rootMustHave = [
     'SkillStackSchema', 'SkillStackItemSchema', 'SkillCategorySchema', 'SKILL_PROFICIENCY_VALUES', 'SKILL_STACK_EXAMPLE',
     'MetaSchema', 'META_EXAMPLE',
     'SitemapSchema', 'SITEMAP_SECTIONS', 'SITEMAP_EXAMPLE',
-    'TrackQuerySchema', 'TrackResponseSchema', 'VisitorRecordSchema', 'VisitorPortfolioRecordSchema', 'VISITOR_DEVICE_VALUES', 'TRACK_RESPONSE_EXAMPLE', 'VISITOR_RECORD_EXAMPLE', 'VISITOR_PORTFOLIO_RECORD_EXAMPLE',
+    'TrackQuerySchema', 'TrackResponseSchema', 'VisitorRecordSchema', 'VisitorPortfolioRecordSchema', 'VisitorWriteSchema', 'VisitorPortfolioWriteSchema', 'VISITOR_DEVICE_VALUES', 'TRACK_RESPONSE_EXAMPLE', 'VISITOR_RECORD_EXAMPLE', 'VISITOR_PORTFOLIO_RECORD_EXAMPLE', 'VISITOR_WRITE_EXAMPLE', 'VISITOR_PORTFOLIO_WRITE_EXAMPLE',
 ];
 
 const subpathToRelativeSourcePath = (subpath: string): string => {
