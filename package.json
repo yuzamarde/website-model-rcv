@@ -1,6 +1,6 @@
 {
     "name": "website-model-rcv",
-    "version": "2.5.0",
+    "version": "2.6.0",
     "description": "Source-of-truth response contracts (TypeScript + Zod) for the Porto public portfolio website API",
     "type": "module",
     "main": "dist/index.js",
@@ -17,6 +17,10 @@
         "./schemas/basicInfo": {
             "types": "./dist/schemas/basicInfo.d.ts",
             "import": "./dist/schemas/basicInfo.js"
+        },
+        "./schemas/profile": {
+            "types": "./dist/schemas/profile.d.ts",
+            "import": "./dist/schemas/profile.js"
         },
         "./schemas/education": {
             "types": "./dist/schemas/education.d.ts",

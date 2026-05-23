@@ -24,6 +24,14 @@ export {
     type UserRole,
 } from './schemas/basicInfo.js';
 
+// RFC 0016 — Profile (canonical public-facing User Profile shape).
+// Coexists with basicInfo (legacy). See schemas/profile.ts header.
+export {
+    ProfileSchema,
+    PROFILE_EXAMPLE,
+    type Profile,
+} from './schemas/profile.js';
+
 export {
     EducationSchema,
     EducationItemSchema,
