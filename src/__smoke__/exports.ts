@@ -16,8 +16,7 @@
 
 const subpaths = [
     { subpath: './envelope', mustHave: ['apiEnvelope'] },
-    { subpath: './schemas/basicInfo', mustHave: ['BasicInfoSchema', 'BASIC_INFO_EXAMPLE', 'USER_STATUS', 'USER_ROLES'] },
-    { subpath: './schemas/profile', mustHave: ['ProfileSchema', 'PROFILE_EXAMPLE'] },
+    { subpath: './schemas/basicInfo', mustHave: ['BasicInfoSchema', 'BASIC_INFO_EXAMPLE'] },
     { subpath: './schemas/education', mustHave: ['EducationSchema', 'EducationItemSchema', 'EDUCATION_DEGREES', 'EDUCATION_EXAMPLE'] },
     { subpath: './schemas/certification', mustHave: ['CertificationSchema', 'CertificationItemSchema', 'CERTIFICATION_EXAMPLE'] },
     { subpath: './schemas/experience', mustHave: ['ExperienceSchema', 'ExperienceItemSchema', 'PositionSchema', 'EXPERIENCE_CONTRACT_TYPES', 'EXPERIENCE_TYPE_WORK', 'EXPERIENCE_EXAMPLE'] },
@@ -32,8 +31,7 @@ const subpaths = [
 
 const rootMustHave = [
     'apiEnvelope',
-    'BasicInfoSchema', 'BASIC_INFO_EXAMPLE', 'USER_STATUS', 'USER_ROLES',
-    'ProfileSchema', 'PROFILE_EXAMPLE',
+    'BasicInfoSchema', 'BASIC_INFO_EXAMPLE',
     'EducationSchema', 'EducationItemSchema', 'EDUCATION_DEGREES', 'EDUCATION_EXAMPLE',
     'CertificationSchema', 'CertificationItemSchema', 'CERTIFICATION_EXAMPLE',
     'ExperienceSchema', 'ExperienceItemSchema', 'PositionSchema', 'EXPERIENCE_CONTRACT_TYPES', 'EXPERIENCE_TYPE_WORK', 'EXPERIENCE_EXAMPLE',

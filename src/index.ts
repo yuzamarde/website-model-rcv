@@ -14,23 +14,15 @@
 
 export { apiEnvelope, type ApiEnvelope } from './envelope.js';
 
+// BasicInfo v3.0.0 (Phase 11, 2026-05-25) — single canonical public-website
+// shape. Profile schema deleted; /profile endpoint deleted; USER_STATUS +
+// USER_ROLES enums dropped from public exposure (status/role no longer
+// surfaced via /basic).
 export {
     BasicInfoSchema,
     BASIC_INFO_EXAMPLE,
-    USER_STATUS,
-    USER_ROLES,
     type BasicInfo,
-    type UserStatus,
-    type UserRole,
 } from './schemas/basicInfo.js';
-
-// RFC 0016 — Profile (canonical public-facing User Profile shape).
-// Coexists with basicInfo (legacy). See schemas/profile.ts header.
-export {
-    ProfileSchema,
-    PROFILE_EXAMPLE,
-    type Profile,
-} from './schemas/profile.js';
 
 export {
     EducationSchema,
