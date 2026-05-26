@@ -19,6 +19,26 @@
  * Privacy mask: when `sharePersonalInfo === false` server-side, the 4 fields
  * `phoneNumber`, `city`, `address`, `postalCode` are nulled before serialization.
  * `gender`, `legalEntityName`, `state`, `country`, `email` always retained.
+ *
+ * ============================================
+ * PHASE 12 (RFC-0018, 2026-05-26) — backend storage split (wire shape unchanged)
+ * ============================================
+ *
+ * No version bump required. Schema below is UNCHANGED. The 16-field merged
+ * shape is now composed SERVER-SIDE from TWO Mongo collections:
+ *
+ *   • `users`:        `email`, `phoneNumber`, `sharePersonalInfo` (mask check)
+ *   • `userprofiles`: `name`, `professional`, `description`, `photo`,
+ *                     `postalCode`, `address`, `city`, `state`, `country`,
+ *                     `gender`, `coverVideo`, `coverVideoThumbnail`,
+ *                     `legalEntityName`
+ *   • Computed:       `usedCategories` (derived from Portfolio JOIN)
+ *
+ * porto-be controllers do 2 sequential `findOne` calls + merge.
+ * porto-rs does single aggregation `$lookup` pipeline (single round-trip).
+ *
+ * Template consumers see no change. CI shape parity test
+ * (`basic-info-shape.test.js`) still passes — wire shape preserved.
  */
 import { z } from 'zod';
 
