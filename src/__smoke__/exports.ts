@@ -14,6 +14,10 @@
  * (Node 22.6+).
  */
 
+// Marks the file as a TS module so top-level `await` (lines 57, 72) is legal
+// under TS1375. Pure compile-time concern — runtime behavior unchanged.
+export {};
+
 const subpaths = [
     { subpath: './envelope', mustHave: ['apiEnvelope'] },
     { subpath: './schemas/basicInfo', mustHave: ['BasicInfoSchema', 'BASIC_INFO_EXAMPLE'] },
