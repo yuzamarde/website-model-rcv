@@ -26,6 +26,34 @@ for the contract.
 
 _Nothing yet._
 
+## [4.0.0] — 2026-05-31 — **BREAKING** — Portfolio LIST shape split + pagination
+
+### Breaking
+
+- `/api/public/user/site/:apiKey/portfolio` LIST endpoint now returns a **slim 12-field item shape** (`PortfolioListItemSchema`), down from the previous 24-field full shape.
+  - Fields KEPT on LIST: `_id`, `title`, `client`, `description`, `image`, `category`, `skillsStack`, `order`, `status`, `verified`, `video`, `videoThumbnail`.
+  - Fields DROPPED from LIST: `url`, `pdf`, `pdfId`, `imageId`, `videoId`, `content[]`, `role`, `startDate`, `endDate`, `sourceUrl`, `visibility`, `createdAt`, `updatedAt`.
+  - Detail endpoint `/portfolio/:id` UNCHANGED — still returns full 24-field `PortfolioItemSchema`. Templates needing dropped fields fetch detail on click.
+- `PortfolioListEnvelopeSchema` refactored: `usedCategories` moved from top-level into `meta`, and `meta` extended with pagination fields `{ total, limit, offset, hasMore }`.
+
+### Added
+
+- `PortfolioListItemSchema` — slim 12-field item for LIST endpoint.
+- `PortfolioListSchema` — `z.array(PortfolioListItemSchema)`.
+- `PortfolioListMetaSchema` — pagination meta `{ usedCategories, total, limit, offset, hasMore }`.
+- `PORTFOLIO_LIST_EXAMPLE` and `PORTFOLIO_LIST_ENVELOPE_EXAMPLE` constants for fixture seeding.
+- LIST endpoint now supports `?limit=N&offset=N` query parameters (limit: 10-50, default 12; offset: ≥0, default 0).
+
+### Rationale
+
+User-driven server-load reduction: dropping `content[]` eliminates the nested `content[].media` `$lookup` aggregation stage (the heaviest cost in Phase 14f), reduces wire payload ~80%, and cuts cold-cache latency ~70%. Pre-production status (0 paying buyers) justifies the BREAKING bump. See `PLAN/swirling-baking-penguin.md` Phase 15.
+
+### Consumer migration
+
+- **porto-be**: `formatPortfolios` repointed to new `formatPortfolioListItem`; `getUserPortfolio` controller drops `pdf` + `content.media` populate; tightens `.select()`; adds Zod pagination params.
+- **porto-rs**: `repos/portfolio.rs::list_published_for_user` switched to `$facet` aggregation (items + total + categories in single round-trip); `format_portfolio_list_item` handler emits 12-field shape; `Query<PortfolioListParams>` extracts limit + offset.
+- **4 RCV templates**: pin bump from `v3.0.0` → `v4.0.0`. cyandark + stanlay + rcv-origin must remove list-card `url`/`pdf` rendering (or fetch `/portfolio/:id` on click); flefy unchanged. All 4 templates wire Load More button + offset state.
+
 ## [2.4.0] — 2026-05-10
 
 First formally-tagged release. All previously published 2.x evolution is collapsed under this entry; the next release will track changes incrementally.

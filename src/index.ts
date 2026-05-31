@@ -81,23 +81,36 @@ export {
 } from './schemas/language.js';
 
 export {
+    // DETAIL endpoint shapes (/portfolio/:id) — full 24-field
     PortfolioSchema,
     PortfolioItemSchema,
     PortfolioCategorySchema,
     PortfolioImageBlockSchema,
     PortfolioDescriptionBlockSchema,
     PortfolioContentBlockSchema,
+    // LIST endpoint shapes (/portfolio) — Phase 15 v4.0.0 SLIM 12-field
+    PortfolioListItemSchema,
+    PortfolioListSchema,
+    PortfolioListMetaSchema,
     PortfolioListEnvelopeSchema,
+    // Shared enums
     PORTFOLIO_STATUS_VALUES,
     PORTFOLIO_VISIBILITY_VALUES,
     PORTFOLIO_BLOCK_TYPES,
+    // Examples
     PORTFOLIO_EXAMPLE,
+    PORTFOLIO_LIST_EXAMPLE,
+    PORTFOLIO_LIST_ENVELOPE_EXAMPLE,
+    // Types
     type Portfolio,
     type PortfolioItem,
     type PortfolioCategory,
     type PortfolioImageBlock,
     type PortfolioDescriptionBlock,
     type PortfolioContentBlock,
+    type PortfolioListItem,
+    type PortfolioList,
+    type PortfolioListMeta,
     type PortfolioListEnvelope,
     type PortfolioStatus,
     type PortfolioVisibility,

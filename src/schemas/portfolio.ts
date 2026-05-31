@@ -2,22 +2,36 @@
  * PORTFOLIO — Response Shape
  *
  * Endpoints:
- *   GET /api/public/user/id/:userId/portfolio          → array (list)
- *   GET /api/public/user/id/:userId/portfolio/:id      → single object (detail)
+ *   GET /api/public/user/site/:apiKey/portfolio       → LIST (slim 12 fields per item, paginated)
+ *   GET /api/public/user/site/:apiKey/portfolio/:id   → DETAIL (full 24 fields)
  *
- * Cache TTL: 5 minutes.
+ * Cache TTL: 5 minutes (both endpoints).
  *
- * List endpoint excludes Archived items, sorted by `order` ascending.
- * The list envelope adds an extra `usedCategories: string[]` field
- * (see `PortfolioListEnvelopeSchema`).
+ * Pagination (LIST only — Phase 15, v4.0.0):
+ *   Query params: ?limit=N&offset=N
+ *     limit: int, default 12, min 10, max 50
+ *     offset: int, default 0, non-negative
+ *   Response meta: { usedCategories, total, limit, offset, hasMore }
+ *
+ * Filters (LIST only):
+ *   visibility = 'Published' (always — `visibility` field NOT exposed on list)
+ *   status != 'Archived'     (only Completed + In Progress shown)
+ *   sort by `order` ascending
  *
  * v2.2 — replaced `longDescription` (sanitized HTML) + `gallery[]` with a
- *        single typed `content[]` array. Each block is either an image or a
- *        sanitized description-HTML chunk; array index = display order, with
- *        no constraints on sequencing (adjacent same-type blocks allowed).
+ *        single typed `content[]` array.
  * v2.3 — adds `imageId` / `pdfId` / `videoId` / `content[].mediaId` on read
- *        responses (additive, non-breaking) so edit forms can round-trip
- *        unchanged Media refs without re-uploading.
+ *        responses (additive, non-breaking) for edit-form round-trip.
+ * v3.0 — Phase 11 — basicInfo redefine; portfolio unchanged.
+ * v4.0 — Phase 15 BREAKING — LIST endpoint shape SPLIT from DETAIL.
+ *        LIST returns NEW PortfolioListItemSchema (12 fields). Detail unchanged.
+ *        Dropped from list: content[], pdf, url, video* (no — video kept),
+ *        role, dates, status flags, ids, timestamps.
+ *        Kept on list per user spec: _id, title, client, description, image,
+ *        category, skillsStack, order, status, verified, video, videoThumbnail.
+ *        Pagination added with offset/limit + meta envelope extension.
+ *        Templates' list-card UIs that used url/pdf must fetch /portfolio/:id
+ *        on click to retrieve full shape.
  */
 import { z } from 'zod';
 
@@ -85,14 +99,72 @@ export const PortfolioItemSchema = z.object({
 
 export const PortfolioSchema = z.array(PortfolioItemSchema);
 
+// ============================================
+// LIST shape (Phase 15, v4.0.0) — SLIM 12-field item
+// ============================================
+// User-curated field set for the /portfolio LIST endpoint. Full shape moves to
+// /portfolio/:id detail endpoint. Reduces server work (drops content[].media
+// nested $lookup) + wire payload (~-80%).
+//
+// Fields explicitly per user spec:
+//   _id, title, client, description, image, category, skillsStack,
+//   order, status, verified, video, videoThumbnail
+//
+// Fields explicitly DROPPED from list (still present on detail):
+//   url, pdf, pdfId, imageId, videoId, content[], role, startDate, endDate,
+//   sourceUrl, visibility, createdAt, updatedAt
+//
+// Notes:
+//   - `visibility` dropped because server filter pins it to 'Published'
+//   - `status` retained but Archived items filtered server-side
+//   - `video` + `videoThumbnail` retained per user — populated via .populate('video', 'secureUrl thumbnail')
+export const PortfolioListItemSchema = z.object({
+    _id:            z.string(),
+    title:          z.string(),
+    client:         z.string(),
+    description:    z.string(),
+    image:          z.string().nullable(),
+    category:       PortfolioCategorySchema.nullable(),
+    skillsStack:    z.array(z.string()),
+    order:          z.number(),
+    status:         z.enum(PORTFOLIO_STATUS_VALUES),
+    verified:       z.boolean(),
+    video:          z.string().nullable(),
+    videoThumbnail: z.string().nullable(),
+});
+
+export const PortfolioListSchema = z.array(PortfolioListItemSchema);
+
 /**
- * The list endpoint adds `usedCategories` to the envelope:
- *   { message, data: PortfolioItem[], usedCategories: string[] }
+ * The LIST envelope wraps PortfolioListSchema (slim) and exposes pagination
+ * metadata under `meta`. The `usedCategories` array is computed across ALL
+ * portfolios matching the server filter (NOT just the current page) so the
+ * filter-chip UI on page 1 shows every available category.
+ *
+ *   {
+ *     message: "Portfolio retrieved",
+ *     data: PortfolioListItem[],
+ *     meta: {
+ *       usedCategories: string[],
+ *       total: number,
+ *       limit: number,
+ *       offset: number,
+ *       hasMore: boolean,
+ *     }
+ *   }
  */
+export const PortfolioListMetaSchema = z.object({
+    usedCategories: z.array(z.string()),
+    total:          z.number().int().nonnegative(),
+    limit:          z.number().int().min(10).max(50),
+    offset:         z.number().int().nonnegative(),
+    hasMore:        z.boolean(),
+});
+
 export const PortfolioListEnvelopeSchema = z.object({
     message: z.string(),
-    data: PortfolioSchema,
-    usedCategories: z.array(z.string()),
+    data: PortfolioListSchema,
+    meta: PortfolioListMetaSchema,
 });
 
 export type PortfolioCategory = z.infer<typeof PortfolioCategorySchema>;
@@ -101,6 +173,9 @@ export type PortfolioDescriptionBlock = z.infer<typeof PortfolioDescriptionBlock
 export type PortfolioContentBlock = z.infer<typeof PortfolioContentBlockSchema>;
 export type PortfolioItem = z.infer<typeof PortfolioItemSchema>;
 export type Portfolio = z.infer<typeof PortfolioSchema>;
+export type PortfolioListItem = z.infer<typeof PortfolioListItemSchema>;
+export type PortfolioList = z.infer<typeof PortfolioListSchema>;
+export type PortfolioListMeta = z.infer<typeof PortfolioListMetaSchema>;
 export type PortfolioListEnvelope = z.infer<typeof PortfolioListEnvelopeSchema>;
 
 export const PORTFOLIO_EXAMPLE: Portfolio = [
@@ -138,3 +213,33 @@ export const PORTFOLIO_EXAMPLE: Portfolio = [
         updatedAt: '2024-01-10T09:00:00.000Z',
     },
 ];
+
+// Phase 15 (v4.0.0) — slim LIST shape example. Mirrors PortfolioListItemSchema.
+export const PORTFOLIO_LIST_EXAMPLE: PortfolioList = [
+    {
+        _id: '64f1a2b3c4d5e6f7a8b9c0d9',
+        title: 'E-Commerce Dashboard',
+        client: 'Tokopedia',
+        description: 'Real-time analytics dashboard for seller performance.',
+        image: 'https://cdn.example.com/portfolio/ecommerce.jpg',
+        category: { _id: '64f1a2b3c4d5e6f7a8b9c0e3', name: 'Web App' },
+        skillsStack: ['React', 'Node.js', 'MongoDB'],
+        order: 1,
+        status: 'Completed',
+        verified: false,
+        video: null,
+        videoThumbnail: null,
+    },
+];
+
+export const PORTFOLIO_LIST_ENVELOPE_EXAMPLE: PortfolioListEnvelope = {
+    message: 'Portfolio retrieved',
+    data: PORTFOLIO_LIST_EXAMPLE,
+    meta: {
+        usedCategories: ['Web App', 'Mobile', 'Data Science'],
+        total:   1,
+        limit:   12,
+        offset:  0,
+        hasMore: false,
+    },
+};

@@ -15,6 +15,9 @@ import {
     SocialAccountSchema, SOCIAL_ACCOUNT_EXAMPLE,
     LanguageSchema, LANGUAGE_EXAMPLE,
     PortfolioSchema, PORTFOLIO_EXAMPLE,
+    // Phase 15 v4.0.0 — slim LIST shape
+    PortfolioListSchema, PORTFOLIO_LIST_EXAMPLE,
+    PortfolioListEnvelopeSchema, PORTFOLIO_LIST_ENVELOPE_EXAMPLE,
     SkillStackSchema, SKILL_STACK_EXAMPLE,
     MetaSchema, META_EXAMPLE,
     SitemapSchema, SITEMAP_EXAMPLE,
@@ -32,6 +35,8 @@ const cases: Array<[string, ZodTypeAny, unknown]> = [
     ['socialAccount', SocialAccountSchema, SOCIAL_ACCOUNT_EXAMPLE],
     ['language', LanguageSchema, LANGUAGE_EXAMPLE],
     ['portfolio', PortfolioSchema, PORTFOLIO_EXAMPLE],
+    ['portfolio/list', PortfolioListSchema, PORTFOLIO_LIST_EXAMPLE],
+    ['portfolio/list-envelope', PortfolioListEnvelopeSchema, PORTFOLIO_LIST_ENVELOPE_EXAMPLE],
     ['skillStack', SkillStackSchema, SKILL_STACK_EXAMPLE],
     ['meta', MetaSchema, META_EXAMPLE],
     ['sitemap', SitemapSchema, SITEMAP_EXAMPLE],
