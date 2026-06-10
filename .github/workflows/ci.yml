@@ -1,0 +1,54 @@
+name: CI
+
+# RFC-0022 Group F — first CI for website-model-rcv (the single source-of-truth
+# response-contract repo consumed by porto-be, porto-fe, porto-rs, and the 4 RCV
+# templates). Previously the publish gates were 100% manual: nothing guaranteed
+# `dist/` builds and the smoke + exports tests pass on a tag before downstreams
+# pinned to it.
+#
+# This automates the FIRST leg of WEBSITE_MODEL_RCV_PUBLISH_GATES.md (source
+# smoke). The doc's full 3-suite gate (this + porto-be boundary suite + porto-rs
+# parity suite) stays authoritative before tagging — see porto-be
+# .claude/rules/contracts.md.
+on:
+  pull_request:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-smoke:
+    name: build + smoke + exports
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Node 22: the smoke tests run TS sources directly via
+      # `node --experimental-strip-types` (added in Node 22.6+). Node 20 rejects
+      # the flag, so this repo's tests cannot run on 20.
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # tsc — produces dist/. A broken build here would ship an unconsumable
+      # package to every downstream that pins the next tag.
+      - name: Build (tsc → dist/)
+        run: npm run build
+
+      # smoke (examples.ts) + exports (exports.ts) — proves every schema parses
+      # its example and every declared export is reachable.
+      - name: Test (smoke + exports)
+        run: npm test
