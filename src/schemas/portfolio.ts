@@ -69,6 +69,25 @@ export const PortfolioContentBlockSchema = z.discriminatedUnion('type', [
     PortfolioDescriptionBlockSchema,
 ]);
 
+// ============================================
+// Creator credits (RFC-0031 Stage 2) — ADDITIVE
+// ============================================
+// A portfolio's collaborators, credited publicly on the detail response. The single
+// OWNER is the site itself; `creators[]` lists *other* contributors who accepted an
+// invitation. Display-only by design — no internal id and no login username are
+// exposed (buyer-data minimization). `kind` discriminates 'user' (today) from
+// 'company' (forward-declared; never populated until a Company entity ships).
+export const PORTFOLIO_CREATOR_KINDS = ['user', 'company'] as const;
+export type PortfolioCreatorKind = (typeof PORTFOLIO_CREATOR_KINDS)[number];
+
+export const PortfolioCreatorSchema = z.object({
+    kind:      z.enum(PORTFOLIO_CREATOR_KINDS),
+    name:      z.string().nullable(),
+    photo:     z.string().nullable(),
+    roleTitle: z.string().nullable(),
+});
+export type PortfolioCreator = z.infer<typeof PortfolioCreatorSchema>;
+
 export const PortfolioItemSchema = z.object({
     _id: z.string(),
     title: z.string(),
@@ -95,6 +114,11 @@ export const PortfolioItemSchema = z.object({
     videoThumbnail: z.string().nullable(),
     createdAt: z.string(),
     updatedAt: z.string(),
+    // RFC-0031 Stage 2 — collaborator credits (ADDITIVE, optional). Present on the
+    // public DETAIL response (empty array when the portfolio has no accepted
+    // collaborators); not emitted on the slim LIST item. Optional so consumers
+    // pinned to a pre-RFC-0031 tag keep validating.
+    creators: z.array(PortfolioCreatorSchema).optional(),
 });
 
 export const PortfolioSchema = z.array(PortfolioItemSchema);
@@ -211,6 +235,9 @@ export const PORTFOLIO_EXAMPLE: Portfolio = [
         videoThumbnail: null,
         createdAt: '2024-01-10T09:00:00.000Z',
         updatedAt: '2024-01-10T09:00:00.000Z',
+        creators: [
+            { kind: 'user', name: 'Bob Designer', photo: 'https://cdn.example.com/avatars/bob.jpg', roleTitle: 'Lead Designer' },
+        ],
     },
 ];
 
