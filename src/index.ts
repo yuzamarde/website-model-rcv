@@ -88,6 +88,9 @@ export {
     PortfolioImageBlockSchema,
     PortfolioDescriptionBlockSchema,
     PortfolioContentBlockSchema,
+    // Creator credits (RFC-0031) + trust links (RFC-0037, v4.2.0)
+    PortfolioCreatorSchema,
+    PortfolioPersonRefSchema,
     // LIST endpoint shapes (/portfolio) — Phase 15 v4.0.0 SLIM 12-field
     PortfolioListItemSchema,
     PortfolioListSchema,
@@ -97,6 +100,8 @@ export {
     PORTFOLIO_STATUS_VALUES,
     PORTFOLIO_VISIBILITY_VALUES,
     PORTFOLIO_BLOCK_TYPES,
+    PORTFOLIO_CREATOR_KINDS,
+    PORTFOLIO_CLIENT_KINDS,
     // Examples
     PORTFOLIO_EXAMPLE,
     PORTFOLIO_LIST_EXAMPLE,
@@ -108,6 +113,10 @@ export {
     type PortfolioImageBlock,
     type PortfolioDescriptionBlock,
     type PortfolioContentBlock,
+    type PortfolioCreator,
+    type PortfolioCreatorKind,
+    type PortfolioPersonRef,
+    type PortfolioClientKind,
     type PortfolioListItem,
     type PortfolioList,
     type PortfolioListMeta,

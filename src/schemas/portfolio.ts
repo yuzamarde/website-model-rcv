@@ -32,6 +32,12 @@
  *        Pagination added with offset/limit + meta envelope extension.
  *        Templates' list-card UIs that used url/pdf must fetch /portfolio/:id
  *        on click to retrieve full shape.
+ * v4.2 — RFC-0037 trust links (2026-07-09) — ADDITIVE. DETAIL appends `owner`
+ *        (PortfolioPersonRefSchema), `clientKind` / `clientUser` /
+ *        `clientCompanyId` (RFC-0034 client link, resolved — raw ids never
+ *        exposed), and creators[] items append `profileUrl`. The login
+ *        `username` itself stays un-emitted (data minimization) — it is only
+ *        embedded inside the derived `profileUrl`. LIST unchanged.
  */
 import { z } from 'zod';
 
@@ -74,9 +80,12 @@ export const PortfolioContentBlockSchema = z.discriminatedUnion('type', [
 // ============================================
 // A portfolio's collaborators, credited publicly on the detail response. The single
 // OWNER is the site itself; `creators[]` lists *other* contributors who accepted an
-// invitation. Display-only by design — no internal id and no login username are
-// exposed (buyer-data minimization). `kind` discriminates 'user' (today) from
-// 'company' (forward-declared; never populated until a Company entity ships).
+// invitation. No internal id and no login `username` are ever exposed (buyer-data
+// minimization). Since v4.2 (RFC-0037) the derived `profileUrl` IS exposed — a
+// deliberate decision so templates can render the credit as a clickable link to the
+// person's profile on the main website (the handle only appears embedded in that
+// URL). `kind` discriminates 'user' (today) from 'company' (forward-declared;
+// never populated until a Company entity ships).
 export const PORTFOLIO_CREATOR_KINDS = ['user', 'company'] as const;
 export type PortfolioCreatorKind = (typeof PORTFOLIO_CREATOR_KINDS)[number];
 
@@ -85,8 +94,37 @@ export const PortfolioCreatorSchema = z.object({
     name:      z.string().nullable(),
     photo:     z.string().nullable(),
     roleTitle: z.string().nullable(),
+    // v4.2 (RFC-0037) — ADDITIVE, appended after the v4.1 keys. Main-site profile
+    // link (FRONTEND_URL + '/' + username, derived server-side). Optional so
+    // consumers pinned to a pre-4.2 tag keep validating; kind 'company' → null.
+    profileUrl: z.string().nullable().optional(),
 });
 export type PortfolioCreator = z.infer<typeof PortfolioCreatorSchema>;
+
+// ============================================
+// Person ref + client link (RFC-0037, v4.2.0) — ADDITIVE
+// ============================================
+// Public-safe reference to a platform user, shown on the buyer site as a clickable
+// credit. `profileUrl` points at the person's profile on the main website
+// (FRONTEND_URL + '/' + username, derived server-side; null when the user has no
+// resolvable username). The login `username` itself is NOT a key here (buyer-data
+// minimization — it only appears embedded in the URL). All fields nullable — an
+// unresolvable ref (deleted user, missing profile row) degrades to nulls, never
+// to a missing key (empty-data contract style). Internal ids are NEVER exposed.
+export const PortfolioPersonRefSchema = z.object({
+    name:       z.string().nullable(),
+    photo:      z.string().nullable(),
+    profileUrl: z.string().nullable(),
+});
+export type PortfolioPersonRef = z.infer<typeof PortfolioPersonRefSchema>;
+
+// RFC-0034 client link — discriminates the OPTIONAL link beside the required
+// `client` display string (which stays the display SSOT forever): null = plain-text
+// client; 'user' → `clientUser` (resolved PersonRef); 'company' → `clientCompanyId`
+// (opaque cross-service id — by design a string, never an internal ObjectId).
+// Neither kind is constructible until RFC-0034 P1 ships — emitted as null until then.
+export const PORTFOLIO_CLIENT_KINDS = ['user', 'company'] as const;
+export type PortfolioClientKind = (typeof PORTFOLIO_CLIENT_KINDS)[number];
 
 export const PortfolioItemSchema = z.object({
     _id: z.string(),
@@ -119,6 +157,18 @@ export const PortfolioItemSchema = z.object({
     // collaborators); not emitted on the slim LIST item. Optional so consumers
     // pinned to a pre-RFC-0031 tag keep validating.
     creators: z.array(PortfolioCreatorSchema).optional(),
+    // RFC-0037 (v4.2.0) — trust links, ALL ADDITIVE, appended after `creators`:
+    // `owner` — the portfolio owner as a clickable credit. Always a full-key
+    //   object (nullable fields) when emitted; matters on a CREATOR's site,
+    //   where the owner is someone else (RFC-0031 co-created items).
+    owner: PortfolioPersonRefSchema.optional(),
+    // Client link (RFC-0034 — storage shipped P0, activation P1). `client`
+    //   above stays the required display string; these carry the optional
+    //   clickable link. Raw clientUserRef ObjectId is NEVER emitted — it is
+    //   resolved into `clientUser` (PersonRef) server-side.
+    clientKind: z.enum(PORTFOLIO_CLIENT_KINDS).nullable().optional(),
+    clientUser: PortfolioPersonRefSchema.nullable().optional(),
+    clientCompanyId: z.string().nullable().optional(),
 });
 
 export const PortfolioSchema = z.array(PortfolioItemSchema);
@@ -236,8 +286,13 @@ export const PORTFOLIO_EXAMPLE: Portfolio = [
         createdAt: '2024-01-10T09:00:00.000Z',
         updatedAt: '2024-01-10T09:00:00.000Z',
         creators: [
-            { kind: 'user', name: 'Bob Designer', photo: 'https://cdn.example.com/avatars/bob.jpg', roleTitle: 'Lead Designer' },
+            { kind: 'user', name: 'Bob Designer', photo: 'https://cdn.example.com/avatars/bob.jpg', roleTitle: 'Lead Designer', profileUrl: 'https://rcv.lt/bobdesigner' },
         ],
+        // RFC-0037 (v4.2.0) — trust links (appended after `creators`).
+        owner: { name: 'John Doe', photo: 'https://cdn.example.com/avatars/john.jpg', profileUrl: 'https://rcv.lt/johndoe' },
+        clientKind: null,
+        clientUser: null,
+        clientCompanyId: null,
     },
 ];
 
