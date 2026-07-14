@@ -2,7 +2,7 @@
  * SOCIAL ACCOUNT — Response Shape
  *
  * Endpoint: GET /api/public/user/id/:userId/social
- * Cache TTL: 5 minutes.
+ * Cache TTL: 5 minutes. Sorted by `order` ascending (`_id` tiebreak).
  *
  * `social` is the populated platform info (name + URL pattern).
  */

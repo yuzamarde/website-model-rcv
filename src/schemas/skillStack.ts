@@ -2,7 +2,7 @@
  * SKILL STACK — Response Shape
  *
  * Endpoint: GET /api/public/user/id/:userId/skills
- * Cache TTL: 5 minutes.
+ * Cache TTL: 5 minutes. Sorted by `order` ascending (`_id` tiebreak).
  *
  * Each item is a category (e.g. "Frontend") with a list of skills.
  */

@@ -2,7 +2,7 @@
  * LANGUAGE — Response Shape
  *
  * Endpoint: GET /api/public/user/id/:userId/languages
- * Cache TTL: 5 minutes.
+ * Cache TTL: 5 minutes. Sorted by `order` ascending (`_id` tiebreak).
  *
  * Language codes are mapped to display names and native names automatically.
  */
