@@ -147,9 +147,12 @@ export {
 export {
     SitemapSchema,
     SITEMAP_SECTIONS,
+    // RFC-0041 — per-portfolio { id, slug } rows for slug-URL sitemap generation
+    SitemapPortfolioRefSchema,
     SITEMAP_EXAMPLE,
     type Sitemap,
     type SitemapSection,
+    type SitemapPortfolioRef,
 } from './schemas/sitemap.js';
 
 export {

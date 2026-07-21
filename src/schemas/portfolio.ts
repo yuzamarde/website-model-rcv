@@ -38,6 +38,13 @@
  *        exposed), and creators[] items append `profileUrl`. The login
  *        `username` itself stays un-emitted (data minimization) — it is only
  *        embedded inside the derived `profileUrl`. LIST unchanged.
+ * v4.3 — RFC-0041 portfolio slug (2026-07-21) — ADDITIVE. Both DETAIL
+ *        (`PortfolioItemSchema`) and LIST (`PortfolioListItemSchema`) gain
+ *        `slug` (nullable string, appended after `title`) — an SEO-friendly
+ *        detail-URL identifier derived server-side from `title`. Regenerated
+ *        whenever `title` changes; legacy docs read `null` until their next
+ *        edit (lazy-fill, no backfill). Unique per owning user, never global
+ *        — the field carries no uniqueness guarantee at the schema level.
  */
 import { z } from 'zod';
 
@@ -129,6 +136,10 @@ export type PortfolioClientKind = (typeof PORTFOLIO_CLIENT_KINDS)[number];
 export const PortfolioItemSchema = z.object({
     _id: z.string(),
     title: z.string(),
+    // v4.3 (RFC-0041) — ADDITIVE. SEO-friendly slug derived from `title`; null
+    // until generated (create, or first edit for legacy docs). Regenerated
+    // whenever `title` changes. Optional so pre-4.3 consumers keep validating.
+    slug: z.string().nullable().optional(),
     client: z.string(),
     url: z.string(),
     description: z.string(),
@@ -195,6 +206,8 @@ export const PortfolioSchema = z.array(PortfolioItemSchema);
 export const PortfolioListItemSchema = z.object({
     _id:            z.string(),
     title:          z.string(),
+    // v4.3 (RFC-0041) — ADDITIVE, same semantics as PortfolioItemSchema.slug.
+    slug:           z.string().nullable().optional(),
     client:         z.string(),
     description:    z.string(),
     image:          z.string().nullable(),
@@ -256,6 +269,7 @@ export const PORTFOLIO_EXAMPLE: Portfolio = [
     {
         _id: '64f1a2b3c4d5e6f7a8b9c0d9',
         title: 'E-Commerce Dashboard',
+        slug: 'e-commerce-dashboard',
         client: 'Tokopedia',
         url: 'https://dashboard.tokopedia.com',
         description: 'Real-time analytics dashboard for seller performance.',
@@ -301,6 +315,7 @@ export const PORTFOLIO_LIST_EXAMPLE: PortfolioList = [
     {
         _id: '64f1a2b3c4d5e6f7a8b9c0d9',
         title: 'E-Commerce Dashboard',
+        slug: 'e-commerce-dashboard',
         client: 'Tokopedia',
         description: 'Real-time analytics dashboard for seller performance.',
         image: 'https://cdn.example.com/portfolio/ecommerce.jpg',
