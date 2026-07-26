@@ -12,8 +12,15 @@
  * what lets a sitemap-consuming template publish the SEO-friendly
  * `/portfolio/slug/:slug` URL alongside the id URL. `portfolioIds` is retained
  * forever (additive-only) — existing consumers are unaffected.
+ * v1.2 (RFC-0044, 2026-07-26) — ADDITIVE. Each `portfolios[]` row gains
+ * `slugScope` and `ownerHandle` (same semantics as `PortfolioItemSchema` in
+ * schemas/portfolio.ts) so a sitemap-consuming template can emit the correct
+ * SCOPED slug URL (`…/portfolio/owner/slug/:slug` or
+ * `…/portfolio/creator/:ownerHandle/slug/:slug`) instead of only the legacy
+ * unscoped one. Both null when `slug` is null.
  */
 import { z } from 'zod';
+import { PORTFOLIO_SLUG_SCOPE_VALUES } from './portfolio.js';
 
 export const SITEMAP_SECTIONS = [
     '',
@@ -33,6 +40,10 @@ export type SitemapSection = (typeof SITEMAP_SECTIONS)[number];
 export const SitemapPortfolioRefSchema = z.object({
     id: z.string(),
     slug: z.string().nullable(),
+    // RFC-0044 (v1.2) — same semantics as PortfolioItemSchema's slugScope/
+    // ownerHandle pair in schemas/portfolio.ts. Both null when `slug` is null.
+    slugScope: z.enum(PORTFOLIO_SLUG_SCOPE_VALUES).nullable(),
+    ownerHandle: z.string().nullable(),
 });
 export type SitemapPortfolioRef = z.infer<typeof SitemapPortfolioRefSchema>;
 
@@ -60,7 +71,7 @@ export const SITEMAP_EXAMPLE: Sitemap = {
         '64f1a2b3c4d5e6f7a8b9c0e0',
     ],
     portfolios: [
-        { id: '64f1a2b3c4d5e6f7a8b9c0d9', slug: 'e-commerce-dashboard' },
-        { id: '64f1a2b3c4d5e6f7a8b9c0e0', slug: null },
+        { id: '64f1a2b3c4d5e6f7a8b9c0d9', slug: 'e-commerce-dashboard', slugScope: 'owner', ownerHandle: null },
+        { id: '64f1a2b3c4d5e6f7a8b9c0e0', slug: null, slugScope: null, ownerHandle: null },
     ],
 };

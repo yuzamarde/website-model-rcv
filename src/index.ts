@@ -102,6 +102,7 @@ export {
     PORTFOLIO_BLOCK_TYPES,
     PORTFOLIO_CREATOR_KINDS,
     PORTFOLIO_CLIENT_KINDS,
+    PORTFOLIO_SLUG_SCOPE_VALUES,
     // Examples
     PORTFOLIO_EXAMPLE,
     PORTFOLIO_LIST_EXAMPLE,
@@ -124,6 +125,7 @@ export {
     type PortfolioStatus,
     type PortfolioVisibility,
     type PortfolioBlockType,
+    type PortfolioSlugScope,
 } from './schemas/portfolio.js';
 
 export {

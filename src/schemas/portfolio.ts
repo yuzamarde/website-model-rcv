@@ -45,6 +45,18 @@
  *        whenever `title` changes; legacy docs read `null` until their next
  *        edit (lazy-fill, no backfill). Unique per owning user, never global
  *        — the field carries no uniqueness guarantee at the schema level.
+ * v4.4 — RFC-0044 title uniqueness + scoped slug routes (2026-07-26) —
+ *        ADDITIVE. Both DETAIL and LIST gain `slugScope` (nullable enum
+ *        `'owner' | 'creator'`) and `ownerHandle` (nullable string, the
+ *        `slug`'s owning user's username) appended after `slug`. These let a
+ *        template construct the correct scoped detail URL —
+ *        `…/portfolio/owner/slug/:slug` when `slugScope === 'owner'`, or
+ *        `…/portfolio/creator/:ownerHandle/slug/:slug` when `'creator'` —
+ *        without any server-side parsing. Both fields are null on an item
+ *        whose `slug` is itself null (nothing to scope yet). The pre-existing
+ *        `…/portfolio/slug/:slug` endpoint (RFC-0041) is UNCHANGED and kept
+ *        forever; these two fields describe the NEW scoped alternatives, they
+ *        do not replace anything.
  */
 import { z } from 'zod';
 
@@ -56,6 +68,15 @@ export type PortfolioVisibility = (typeof PORTFOLIO_VISIBILITY_VALUES)[number];
 
 export const PORTFOLIO_BLOCK_TYPES = ['image', 'description'] as const;
 export type PortfolioBlockType = (typeof PORTFOLIO_BLOCK_TYPES)[number];
+
+// RFC-0044 (v4.4.0) — which of the two NEW scoped slug routes resolves this
+// item's `slug` on the current site: 'owner' → `…/portfolio/owner/slug/:slug`,
+// 'creator' → `…/portfolio/creator/:ownerHandle/slug/:slug`. Mirrors the
+// legacy `…/portfolio/slug/:slug` route's own owner-first precedence, so a
+// template that ignores these two fields and only ever calls the legacy route
+// keeps working exactly as it does today.
+export const PORTFOLIO_SLUG_SCOPE_VALUES = ['owner', 'creator'] as const;
+export type PortfolioSlugScope = (typeof PORTFOLIO_SLUG_SCOPE_VALUES)[number];
 
 export const PortfolioCategorySchema = z.object({
     _id: z.string(),
@@ -140,6 +161,15 @@ export const PortfolioItemSchema = z.object({
     // until generated (create, or first edit for legacy docs). Regenerated
     // whenever `title` changes. Optional so pre-4.3 consumers keep validating.
     slug: z.string().nullable().optional(),
+    // v4.4 (RFC-0044) — ADDITIVE. Tells a template which scoped route resolves
+    // `slug` on this site: 'owner' or 'creator'. Null when `slug` itself is
+    // null. Optional so pre-4.4 consumers keep validating.
+    slugScope: z.enum(PORTFOLIO_SLUG_SCOPE_VALUES).nullable().optional(),
+    // v4.4 (RFC-0044) — ADDITIVE. The username to plug into
+    // `…/portfolio/creator/:ownerHandle/slug/:slug` when `slugScope ===
+    // 'creator'`. Null when `slugScope` is 'owner' or null. Optional so
+    // pre-4.4 consumers keep validating.
+    ownerHandle: z.string().nullable().optional(),
     client: z.string(),
     url: z.string(),
     description: z.string(),
@@ -208,6 +238,10 @@ export const PortfolioListItemSchema = z.object({
     title:          z.string(),
     // v4.3 (RFC-0041) — ADDITIVE, same semantics as PortfolioItemSchema.slug.
     slug:           z.string().nullable().optional(),
+    // v4.4 (RFC-0044) — ADDITIVE, same semantics as PortfolioItemSchema's
+    // slugScope/ownerHandle pair.
+    slugScope:      z.enum(PORTFOLIO_SLUG_SCOPE_VALUES).nullable().optional(),
+    ownerHandle:    z.string().nullable().optional(),
     client:         z.string(),
     description:    z.string(),
     image:          z.string().nullable(),
@@ -270,6 +304,8 @@ export const PORTFOLIO_EXAMPLE: Portfolio = [
         _id: '64f1a2b3c4d5e6f7a8b9c0d9',
         title: 'E-Commerce Dashboard',
         slug: 'e-commerce-dashboard',
+        slugScope: 'owner',
+        ownerHandle: null,
         client: 'Tokopedia',
         url: 'https://dashboard.tokopedia.com',
         description: 'Real-time analytics dashboard for seller performance.',
@@ -316,6 +352,8 @@ export const PORTFOLIO_LIST_EXAMPLE: PortfolioList = [
         _id: '64f1a2b3c4d5e6f7a8b9c0d9',
         title: 'E-Commerce Dashboard',
         slug: 'e-commerce-dashboard',
+        slugScope: 'owner',
+        ownerHandle: null,
         client: 'Tokopedia',
         description: 'Real-time analytics dashboard for seller performance.',
         image: 'https://cdn.example.com/portfolio/ecommerce.jpg',
