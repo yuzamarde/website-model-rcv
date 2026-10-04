@@ -26,6 +26,41 @@ for the contract.
 
 _Nothing yet._
 
+## [5.0.0] — 2026-10-04 — **BREAKING** — removed `/api/public/user/:username`
+
+### Breaking
+
+- `GET /api/public/user/:username` endpoint **deleted** (porto-be + porto-rs both dropped the
+  route). This repo never had a schema or fixture for it — the README documented it, but
+  `src/schemas/basicInfo.ts` only ever covered `/api/public/user/site/:apiKey/basic`.
+
+### Rationale
+
+QA-0065 DEF-52: the endpoint returned 16 fields including `email` with **no gate at all** — no
+apiKey (`isActive`), no `allowedOrigins` check, unlike every `/site/:apiKey/*` route. Verified
+zero consumers before removal: porto-fe (`origin/master` + `origin/dev`) references it only in
+comments; all 4 RCV-website-service templates have zero callers in HEAD or in the full git
+history of every branch. See `PLAN/qa/QA-0065/records/fix-plans/DEF-52-53.md` (this monorepo's
+`porto-be/src/contracts` → `PLAN/`) for the full audit trail and no-consumer evidence.
+
+This is the first real use of the "Truly need to break" row in
+[`.claude/rules/additive-only.md`](.claude/rules/additive-only.md) — the removed path had no
+Zod schema here (so additive-only's field-level rules never applied to it directly), but the
+endpoint-removal rule still requires the major bump + coordinated consumer migration this entry
+records.
+
+### Consumer migration
+
+- **porto-be + porto-rs**: route deleted; `GET /api/public/user/<anything that isn't /site/...>`
+  now 404s (porto-rs: axum's bare 404, no JSON body — the route never had a dedicated fallback
+  handler, unchanged by this removal).
+- **porto-fe**: deleted the 2 dead hooks that pointed at the overview/all-usernames siblings of
+  this same audit (`useUserOverviewPage`, `useAllUsernames` — those call porto-be's
+  `/api/user/*`, a separate contract from this repo, tracked in `model-rcv` v5.0.0 instead).
+- **4 RCV templates**: repinned to `v5.0.0` as part of the same release train, even though none
+  of them ever called this endpoint — keeping every consumer's pin in sync with the tag that
+  removed it, per the additive-only "Truly need to break" migration requirement.
+
 ## [4.0.0] — 2026-05-31 — **BREAKING** — Portfolio LIST shape split + pagination
 
 ### Breaking

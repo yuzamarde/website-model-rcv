@@ -22,7 +22,6 @@ All endpoints are **public** (no authentication required).
 | Method | Endpoint | Description | Cache TTL |
 |--------|----------|-------------|-----------|
 | GET | `/id/:userId/basic` | User profile by userId (UUID) | 5 min |
-| GET | `/:username` | User profile by username | 5 min |
 | GET | `/id/:userId/education` | Education history | 5 min |
 | GET | `/id/:userId/certification` | Certifications | 5 min |
 | GET | `/id/:userId/experience` | Work experience | 5 min |
@@ -57,7 +56,7 @@ Every endpoint wraps its data in a standard envelope:
 
 | Endpoint group | Max requests |
 |----------------|-------------|
-| `/basic`, `/:username` | 60 |
+| `/basic` | 60 |
 | `/education`, `/certification`, `/experience`, `/social`, `/portfolio`, `/languages`, `/skills` | 40 |
 | `/meta` | 30 |
 | `/sitemap`, `/track` | 20 |
@@ -71,7 +70,7 @@ Each endpoint has a Zod schema + an inferred TypeScript type. Source lives in
 
 | Source file | Endpoint(s) | Exports |
 |-------------|-------------|---------|
-| [`src/schemas/basicInfo.ts`](./src/schemas/basicInfo.ts)         | `/basic`, `/:username`              | `BasicInfoSchema`, `BasicInfo`, `USER_STATUS`, `USER_ROLES` |
+| [`src/schemas/basicInfo.ts`](./src/schemas/basicInfo.ts)         | `/basic`                            | `BasicInfoSchema`, `BasicInfo`, `USER_STATUS`, `USER_ROLES` |
 | [`src/schemas/education.ts`](./src/schemas/education.ts)         | `/education`                        | `EducationSchema`, `Education`, `EDUCATION_DEGREES` |
 | [`src/schemas/certification.ts`](./src/schemas/certification.ts) | `/certification`                    | `CertificationSchema`, `Certification` |
 | [`src/schemas/experience.ts`](./src/schemas/experience.ts)       | `/experience`                       | `ExperienceSchema`, `Experience`, `Position`, contract / type-work enums |

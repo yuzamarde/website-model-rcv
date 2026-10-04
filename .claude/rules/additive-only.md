@@ -41,6 +41,14 @@ for porto-rs: its `vendor/` pin + golden fixtures assume the shape as it was.
 | Change a field's type | Don't. Add a new field with the new type + a new name. Consumers opt in by pinning a new tag. |
 | Truly need to break | Major-version bump + a NEW endpoint version + per-template repin + manager redeploy of every buyer. Sprint-sized, not a task. |
 
+**Precedent — `v5.0.0` (2026-10-04, QA-0065 DEF-52):** the first real use of this row. Endpoint
+`/api/public/user/:username` had no schema in this repo (so the field-level rules above never
+applied to it directly) but had no gate either — no apiKey, no `allowedOrigins` — and leaked
+`email` to anyone. Zero verified consumers justified removing the path outright rather than
+leaving a stub; the major bump + repin + redeploy path was followed anyway, because "zero
+consumers today" is a fact about this audit, not a standing exception to this rule. See
+`CHANGELOG.md` `[5.0.0]` for the full writeup.
+
 ## Versioning
 
 - Additive change (new optional field / schema / enum value) → **minor** bump (`package.json` `version`).
